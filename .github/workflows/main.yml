@@ -47,3 +47,4 @@ jobs:
         pip install flake8==6.0.0 flake8-isort==6.0.0
     # Запускаем flake8
     - name: Test with flake8 
+      run: flake8 . 

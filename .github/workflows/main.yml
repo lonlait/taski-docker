@@ -50,7 +50,7 @@ jobs:
         pip install -r ./backend/requirements.txt 
     # Запускаем flake8
     - name: Test with flake8 
-      run: flake8 . --exclude=backend/venv312/,venv/,__pycache__/,*.pyc
+      run: flake8 . --exclude=backend/venv312,venv,__pycache__,*.pyc
     # Этот шаг дополним переменными для доступа к БД
     - name: Test with flake8 and django tests
       # Команд стало больше одной; ставим символ | и пишем команды построчно
@@ -64,7 +64,7 @@ jobs:
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
       run: |
-        python -m flake8 backend/ --exclude=venv312/,__pycache__/,*.pyc
+        python -m flake8 backend/ --exclude=venv312,__pycache__,*.pyc
         cd backend/
         python manage.py test 
 
@@ -111,7 +111,7 @@ jobs:
         with:
           context: ./frontend/
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME || 'lonlait' }}/taski_frontend:latest
+          tags: lonlait/taski_frontend:latest
 
   build_gateway_and_push_to_docker_hub:
     name: Push gateway Docker image to DockerHub
@@ -132,4 +132,4 @@ jobs:
           context: ./gateway/
           push: true
           # Тут вместо username должен быть ваш логин на Docker Hub
-          tags: ${{ secrets.DOCKER_USERNAME || 'lonlait' }}/taski_gateway:latest
+          tags: lonlait/taski_gateway:latest

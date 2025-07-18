@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: lonlait/taski_frontend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  backend:
+    image: lonlait/taski_backend:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=158.160.70.136,localhost,127.0.0.1
+      - DATABASE_URL=postgresql://django_user:django_password@db:5432/django_db
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:13.10
+    environment:
+      - POSTGRES_USER=django_user
+      - POSTGRES_PASSWORD=django_password
+      - POSTGRES_DB=django_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  gateway:
+    image: lonlait/taski_gateway:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data: 

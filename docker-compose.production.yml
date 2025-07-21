@@ -1,20 +1,22 @@
 services:
   frontend:
     image: lonlait/taski_frontend:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
+    volumes:
+      - static:/frontend_static
     restart: unless-stopped
 
   backend:
     image: lonlait/taski_backend:latest
-    ports:
-      - "8000:8000"
     environment:
       - DEBUG=False
       - ALLOWED_HOSTS=158.160.70.136,localhost,127.0.0.1
-      - DATABASE_URL=postgresql://django_user:django_password@db:5432/django_db
+      - POSTGRES_USER=django_user
+      - POSTGRES_PASSWORD=django_password
+      - POSTGRES_DB=django_db
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - static:/app/backend_static
     depends_on:
       - db
     restart: unless-stopped
@@ -33,10 +35,13 @@ services:
     image: lonlait/taski_gateway:latest
     ports:
       - "80:80"
+    volumes:
+      - static:/staticfiles
     depends_on:
       - frontend
       - backend
     restart: unless-stopped
 
 volumes:
-  postgres_data: 
+  postgres_data:
+  static: 

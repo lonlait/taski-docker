@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   frontend:
     image: lonlait/taski_frontend:latest

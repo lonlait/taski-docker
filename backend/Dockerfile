@@ -29,8 +29,11 @@ RUN pip install -r requirements.txt
 # Скопировать всё содержимое директории backend (manage.py, backend/, api/ и т.д.)
 COPY . .
 
+# Создать директорию для статических файлов
+RUN mkdir -p /app/backend_static
+
 # Создать скрипт запуска
-RUN echo '#!/bin/bash\npython manage.py migrate\npython manage.py collectstatic --noinput\nexec gunicorn --bind 0.0.0.0:8000 backend.wsgi:application' > /app/start.sh && chmod +x /app/start.sh
+RUN echo '#!/bin/bash\npython manage.py migrate\npython manage.py collectstatic --noinput\ncp -r /app/collected_static/* /app/backend_static/\nexec gunicorn --bind 0.0.0.0:8000 backend.wsgi:application' > /app/start.sh && chmod +x /app/start.sh
 
 # При старте контейнера запустить скрипт запуска
 CMD ["/app/start.sh"]

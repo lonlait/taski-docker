@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy the rest of the application code
 COPY . .
@@ -16,11 +16,11 @@ COPY . .
 # Build the React app for production
 RUN npm run build
 
-# Install a lightweight web server to serve the static files
-RUN npm install -g serve
+# Create directory for static files
+RUN mkdir -p /frontend_static
 
-# Expose port 8000
-EXPOSE 8000
+# Copy built files to static directory
+RUN cp -r build/* /frontend_static/
 
-# Start the application
-CMD ["serve", "-s", "build", "-l", "8000"] 
+# Keep container running for Docker Compose
+CMD ["tail", "-f", "/dev/null"] 

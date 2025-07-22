@@ -216,11 +216,27 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /app/collected_static/
           # Копируем статические файлы только если они есть
           sudo docker compose -f docker-compose.production.yml exec -T backend sh -c "if [ -d /app/collected_static ] && [ \"\$(ls -A /app/collected_static)\" ]; then cp -r /app/collected_static/* /app/backend_static/; else echo 'No static files to copy'; fi"
-          # Настраиваем nginx для проксирования на домен (HTTP)
+          # Настраиваем nginx для проксирования на домен (HTTP и HTTPS)
           sudo tee /etc/nginx/sites-available/gopto.hopto.org << 'EOF'
           server {
               listen 80;
               server_name gopto.hopto.org;
+              
+              location / {
+                  proxy_pass http://localhost:8000;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+          
+          server {
+              listen 443 ssl;
+              server_name gopto.hopto.org;
+              
+              ssl_certificate /etc/letsencrypt/live/gopto.hopto.org/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/gopto.hopto.org/privkey.pem;
               
               location / {
                   proxy_pass http://localhost:8000;
@@ -237,6 +253,10 @@ jobs:
           sudo nginx -t
           # Перезапускаем nginx
           sudo systemctl reload nginx
+          # Проверяем SSL сертификат и получаем если нужно
+          if [ ! -f /etc/letsencrypt/live/gopto.hopto.org/fullchain.pem ]; then
+            sudo certbot --nginx -d gopto.hopto.org --non-interactive --agree-tos --email admin@gopto.hopto.org
+          fi
 
   send_message:
     runs-on: ubuntu-latest
@@ -250,7 +270,7 @@ jobs:
         message: |
           🚀 Taski успешно развернут!
           
-          🌐 Домен: http://gopto.hopto.org
+          🌐 Домен: https://gopto.hopto.org
           📊 Статус: ✅ Успешно
           🕐 Время: ${{ github.event.head_commit.timestamp }}
           

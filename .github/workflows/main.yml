@@ -186,6 +186,8 @@ jobs:
         # с которым установлено соединение
         script: |
           cd taski
+          # Проверяем что файлы скопировались
+          ls -la
           # Собираем образы локально
           sudo docker build -t lonlait/taski_frontend:latest frontend/
           sudo docker build -t lonlait/taski_backend:latest backend/
@@ -197,11 +199,13 @@ jobs:
           # Запускаем контейнеры
           sudo docker compose -f docker-compose.production.yml up -d
           # Ждем запуска базы данных
-          sleep 10
+          sleep 15
+          # Проверяем статус контейнеров
+          sudo docker compose -f docker-compose.production.yml ps
           # Выполняем миграции и сбор статики
-          sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
-          sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --noinput
-          sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/* /app/backend_static/
+          sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
+          sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
+          sudo docker compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/* /app/backend_static/
 
   send_message:
     runs-on: ubuntu-latest

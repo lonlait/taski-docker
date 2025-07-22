@@ -171,7 +171,6 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
         source: "docker-compose.production.yml,frontend/,backend/,gateway/"
         target: "taski"
     - name: Executing remote ssh commands to deploy
@@ -180,7 +179,6 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
         # Параметр script передаёт в action appleboy/ssh-action команды,
         # которые нужно выполнить на сервере, 
         # с которым установлено соединение
@@ -253,9 +251,9 @@ jobs:
           sudo nginx -t
           # Перезапускаем nginx
           sudo systemctl reload nginx
-          # Проверяем SSL сертификат и получаем если нужно
+          # Проверяем SSL сертификат и получаем если нужно (пропускаем если есть ошибки)
           if [ ! -f /etc/letsencrypt/live/gopto.hopto.org/fullchain.pem ]; then
-            sudo certbot --nginx -d gopto.hopto.org --non-interactive --agree-tos --email admin@gopto.hopto.org
+            sudo certbot --nginx -d gopto.hopto.org --non-interactive --agree-tos --email admin@gopto.hopto.org || echo "SSL certificate setup skipped"
           fi
 
   send_message:

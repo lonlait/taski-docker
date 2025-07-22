@@ -226,4 +226,11 @@ jobs:
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: Деплой успешно выполнен!
+        message: |
+          🚀 Taski успешно развернут!
+          
+          🌐 Домен: http://${{ secrets.HOST }}:8080
+          📊 Статус: ✅ Успешно
+          🕐 Время: ${{ github.event.head_commit.timestamp }}
+          
+          Коммит: ${{ github.event.head_commit.message }}

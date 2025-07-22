@@ -216,8 +216,8 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /app/collected_static/
           # Копируем статические файлы только если они есть
           sudo docker compose -f docker-compose.production.yml exec -T backend sh -c "if [ -d /app/collected_static ] && [ \"\$(ls -A /app/collected_static)\" ]; then cp -r /app/collected_static/* /app/backend_static/; else echo 'No static files to copy'; fi"
-          # Собираем статические файлы frontend
-          sudo docker compose -f docker-compose.production.yml exec -T frontend sh -c "npm run build && cp -r build/* /frontend_static/"
+          # Ждем сборки frontend статических файлов
+          sleep 30
           # Проверяем что frontend статические файлы собрались
           sudo docker compose -f docker-compose.production.yml exec -T frontend ls -la /frontend_static/
           # Настраиваем nginx для проксирования на домен (HTTP и HTTPS)

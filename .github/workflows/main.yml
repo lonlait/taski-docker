@@ -216,6 +216,36 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /app/collected_static/
           # Копируем статические файлы только если они есть
           sudo docker compose -f docker-compose.production.yml exec -T backend sh -c "if [ -d /app/collected_static ] && [ \"\$(ls -A /app/collected_static)\" ]; then cp -r /app/collected_static/* /app/backend_static/; else echo 'No static files to copy'; fi"
+          # Настраиваем nginx для проксирования на домен
+          sudo tee /etc/nginx/sites-available/gopto.hopto.org << 'EOF'
+          server {
+              listen 80;
+              server_name gopto.hopto.org;
+              return 301 https://$server_name$request_uri;
+          }
+          
+          server {
+              listen 443 ssl;
+              server_name gopto.hopto.org;
+              
+              ssl_certificate /etc/letsencrypt/live/gopto.hopto.org/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/gopto.hopto.org/privkey.pem;
+              
+              location / {
+                  proxy_pass http://localhost:8000;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+          EOF
+          # Активируем конфигурацию
+          sudo ln -sf /etc/nginx/sites-available/gopto.hopto.org /etc/nginx/sites-enabled/
+          # Проверяем конфигурацию nginx
+          sudo nginx -t
+          # Перезапускаем nginx
+          sudo systemctl reload nginx
 
   send_message:
     runs-on: ubuntu-latest
@@ -229,7 +259,7 @@ jobs:
         message: |
           🚀 Taski успешно развернут!
           
-          🌐 Домен: http://${{ secrets.HOST }}:8080
+          🌐 Домен: https://gopto.hopto.org
           📊 Статус: ✅ Успешно
           🕐 Время: ${{ github.event.head_commit.timestamp }}
           

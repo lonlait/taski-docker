@@ -188,9 +188,14 @@ jobs:
           sudo docker build -t lonlait/taski_frontend:latest frontend/
           sudo docker build -t lonlait/taski_backend:latest backend/
           sudo docker build -t lonlait/taski_gateway:latest gateway/
-          # Перезапускаем все контейнеры в Docker Compose
+          # Останавливаем старые контейнеры
           sudo docker compose -f docker-compose.production.yml down
+          # Удаляем старые volumes если есть
+          sudo docker volume rm taski_static taski_postgres_data 2>/dev/null || true
+          # Запускаем контейнеры
           sudo docker compose -f docker-compose.production.yml up -d
+          # Ждем запуска базы данных
+          sleep 10
           # Выполняем миграции и сбор статики
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --noinput

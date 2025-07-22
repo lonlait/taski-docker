@@ -1,0 +1,36 @@
+# Простой тестовый workflow
+name: Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      
+      - name: Print project tree
+        run: tree .
+      
+      - name: Check Docker files
+        run: |
+          echo "Checking Docker files..."
+          ls -la
+          echo "Backend Dockerfile:"
+          cat backend/Dockerfile
+          echo "Frontend Dockerfile:"
+          cat frontend/Dockerfile
+          echo "Gateway Dockerfile:"
+          cat gateway/Dockerfile
+      
+      - name: Test SSH connection
+        run: |
+          echo "Testing if we can connect to server..."
+          echo "HOST: ${{ secrets.HOST }}"
+          echo "USER: ${{ secrets.USER }}"
+          echo "SSH_KEY exists: ${{ secrets.SSH_KEY != '' }}"
+          echo "SSH_PASSPHRASE exists: ${{ secrets.SSH_PASSPHRASE != '' }}" 

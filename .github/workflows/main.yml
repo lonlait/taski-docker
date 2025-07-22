@@ -188,24 +188,34 @@ jobs:
           cd taski
           # Проверяем что файлы скопировались
           ls -la
+          # Останавливаем все контейнеры и очищаем порты
+          sudo docker compose -f docker-compose.production.yml down
+          # Принудительно останавливаем все контейнеры
+          sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
+          sudo docker rm $(sudo docker ps -aq) 2>/dev/null || true
+          # Очищаем неиспользуемые ресурсы
+          sudo docker system prune -f
+          # Проверяем что порт 8080 свободен
+          sudo netstat -tlnp | grep :8080 || echo "Port 8080 is free"
+          # Удаляем старые volumes если есть
+          sudo docker volume rm taski_static taski_postgres_data 2>/dev/null || true
           # Собираем образы локально
           sudo docker build -t lonlait/taski_frontend:latest frontend/
           sudo docker build -t lonlait/taski_backend:latest backend/
           sudo docker build -t lonlait/taski_gateway:latest gateway/
-          # Останавливаем старые контейнеры
-          sudo docker compose -f docker-compose.production.yml down
-          # Удаляем старые volumes если есть
-          sudo docker volume rm taski_static taski_postgres_data 2>/dev/null || true
           # Запускаем контейнеры
           sudo docker compose -f docker-compose.production.yml up -d
           # Ждем запуска базы данных
-          sleep 15
+          sleep 20
           # Проверяем статус контейнеров
           sudo docker compose -f docker-compose.production.yml ps
           # Выполняем миграции и сбор статики
           sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
-          sudo docker compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/* /app/backend_static/
+          # Проверяем что статические файлы собрались
+          sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /app/collected_static/
+          # Копируем статические файлы только если они есть
+          sudo docker compose -f docker-compose.production.yml exec -T backend sh -c "if [ -d /app/collected_static ] && [ \"\$(ls -A /app/collected_static)\" ]; then cp -r /app/collected_static/* /app/backend_static/; else echo 'No static files to copy'; fi"
 
   send_message:
     runs-on: ubuntu-latest

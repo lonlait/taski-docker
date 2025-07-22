@@ -9,7 +9,7 @@ services:
     image: lonlait/taski_backend:latest
     environment:
       - DEBUG=False
-      - ALLOWED_HOSTS=158.160.70.136,localhost,127.0.0.1
+      - ALLOWED_HOSTS=158.160.70.136,localhost,127.0.0.1,gopto.hopto.org
       - POSTGRES_USER=django_user
       - POSTGRES_PASSWORD=django_password
       - POSTGRES_DB=django_db

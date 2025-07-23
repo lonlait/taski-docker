@@ -1,7 +1,7 @@
 services:
   frontend:
     image: lonlait/taski_frontend:latest
-    command: sh -c "npm run build && cp -r build/* /frontend_static/ && tail -f /dev/null"
+    command: sh -c "cp -r /app/build/* /frontend_static/ && tail -f /dev/null"
     volumes:
       - static:/frontend_static
     restart: unless-stopped

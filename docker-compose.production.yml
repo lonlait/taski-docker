@@ -19,6 +19,7 @@ services:
       - DB_PORT=5432
     volumes:
       - static:/backend_static
+      - static:/staticfiles
     depends_on:
       - db
     restart: unless-stopped

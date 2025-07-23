@@ -213,13 +213,15 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
           # Копируем статические файлы Django в volume согласно теории
-          sudo docker compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/. /backend_static/
+          sudo docker compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/. /backend_static/static/
           # Ждем завершения копирования frontend статики
           sleep 10
           # Копируем frontend статику в корень volume для объединения с backend статикой
           sudo docker compose -f docker-compose.production.yml exec -T frontend cp -r /frontend_static/. /staticfiles/
+          # Копируем backend статику в volume
+          sudo docker compose -f docker-compose.production.yml exec -T backend cp -r /backend_static/static/. /staticfiles/static/
           # Проверяем что статические файлы скопировались
-          sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /backend_static/
+          sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /backend_static/static/
           sudo docker compose -f docker-compose.production.yml exec -T frontend ls -la /frontend_static/
           sudo docker compose -f docker-compose.production.yml exec -T gateway ls -la /staticfiles/
           # Настраиваем nginx для проксирования на домен (HTTP и HTTPS)

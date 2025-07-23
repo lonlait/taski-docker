@@ -212,14 +212,16 @@ jobs:
           # Выполняем миграции и сбор статики
           sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
-          # Проверяем что статические файлы собрались
-          sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /app/collected_static/
-          # Копируем статические файлы только если они есть
-          sudo docker compose -f docker-compose.production.yml exec -T backend sh -c "if [ -d /app/collected_static ] && [ \"\$(ls -A /app/collected_static)\" ]; then cp -r /app/collected_static/* /app/backend_static/; else echo 'No static files to copy'; fi"
-          # Ждем запуска frontend контейнера
+          # Копируем статические файлы Django в volume согласно теории
+          sudo docker compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/. /backend_static/
+          # Ждем завершения копирования frontend статики
           sleep 10
-          # Проверяем что frontend статические файлы скопировались
+          # Копируем frontend статику в корень volume для объединения с backend статикой
+          sudo docker compose -f docker-compose.production.yml exec -T frontend cp -r /frontend_static/. /staticfiles/
+          # Проверяем что статические файлы скопировались
+          sudo docker compose -f docker-compose.production.yml exec -T backend ls -la /backend_static/
           sudo docker compose -f docker-compose.production.yml exec -T frontend ls -la /frontend_static/
+          sudo docker compose -f docker-compose.production.yml exec -T gateway ls -la /staticfiles/
           # Настраиваем nginx для проксирования на домен (HTTP и HTTPS)
           sudo tee /etc/nginx/sites-available/gopto.hopto.org << 'EOF'
           server {

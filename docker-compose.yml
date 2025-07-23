@@ -24,14 +24,14 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
     volumes:
-      - static:/app/backend_static
+      - static:/backend_static
     depends_on:
       - db
     restart: unless-stopped
 
   frontend:
     image: nataliagaaze/taski_frontend
-    command: sh -c "npm run build && cp -r /app/build/. /frontend_static/"
+    command: cp -r /app/build/. /frontend_static/
     volumes:
       - static:/frontend_static
     restart: unless-stopped

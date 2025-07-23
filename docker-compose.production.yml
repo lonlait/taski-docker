@@ -1,9 +1,10 @@
 services:
   frontend:
     image: lonlait/taski_frontend:latest
-    command: sh -c "cp -r /app/build/* /frontend_static/ && tail -f /dev/null"
+    command: cp -r /app/build/. /frontend_static/
     volumes:
       - static:/frontend_static
+      - static:/staticfiles
     restart: unless-stopped
 
   backend:
@@ -17,7 +18,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
     volumes:
-      - static:/app/backend_static
+      - static:/backend_static
     depends_on:
       - db
     restart: unless-stopped
